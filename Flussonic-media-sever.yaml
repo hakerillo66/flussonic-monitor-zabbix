@@ -1,0 +1,627 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    - uuid: 0ed7346c3b684686a804628435ee262d
+      template: 'Template App Flussonic v3'
+      name: 'Template App Flussonic v3'
+      description: 'Monitoring Flussonic Author: Eynikov S.V. E-mail: semeneynikov@gmail.com'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 50eb13711d1c49c0a11e4f142644cd66
+          name: 'Загрузка процессора'
+          type: DEPENDENT
+          key: flussonic.cpu_usage
+          units: '%'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.cpu_usage
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: 6957675f3e0b447298f45a12ee27687a
+          name: 'Скорость входящая'
+          type: DEPENDENT
+          key: flussonic.input_kbit
+          units: bps
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.input_kbit
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: 3ee153c055744ef693144927784c58b4
+          name: 'Статус лицензии'
+          type: DEPENDENT
+          key: flussonic.license_type
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.license_type
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 346900f87b8b43939283cc1239014a14
+              expression: 'find(/Template App Flussonic v3/flussonic.license_type,,"like","online")=0'
+              name: 'Проблем лицензирования'
+              priority: DISASTER
+              tags:
+                - tag: Value
+                  value: '{ITEM.VALUE}'
+        - uuid: 48a25fda501a4a6f90574d2523ed2403
+          name: 'Загрузка памяти'
+          type: DEPENDENT
+          key: flussonic.memory_usage
+          units: '%'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.memory_usage
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: 7882ff591c1844ffa3c8c8183a36775d
+          name: 'Версия следующая'
+          type: DEPENDENT
+          key: flussonic.next_version
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.next_version
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 0ab5b9382e25481cae9e3a8a2811cee9
+              expression: 'length(last(/Template App Flussonic v3/flussonic.next_version))>0'
+              name: 'Вышла новая версия'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                - tag: Value
+                  value: '{ITEM.VALUE}'
+        - uuid: fa57731296dd4f43a5c0e309be40a16a
+          name: 'Скорость исходящая'
+          type: DEPENDENT
+          key: flussonic.output_kbit
+          units: bps
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.output_kbit
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: bd4cdfc59aad4402ac06389a92e18d07
+          name: 'Загрузка планировщика'
+          type: DEPENDENT
+          key: flussonic.scheduler_load
+          units: '%'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.scheduler_load
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: 0b1a78b597b74f0394e3fc75c633ce0d
+          name: 'Статус стримера'
+          type: DEPENDENT
+          key: flussonic.streamer_status
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.streamer_status
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 0313ae8346c7482faee7dfb9193222ab
+              expression: 'find(/Template App Flussonic v3/flussonic.streamer_status,,"like","running")=0'
+              name: 'Стример остановлен'
+              priority: DISASTER
+              tags:
+                - tag: Value
+                  value: '{ITEM.VALUE}'
+        - uuid: 9fb9ccded53b4a6e9ce8bbd1b8406f76
+          name: 'Количество клиентов'
+          type: DEPENDENT
+          key: flussonic.total_clients
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.total_clients
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 787745ac6bf648efae080237596d4111
+              expression: 'last(/Template App Flussonic v3/flussonic.total_clients)> {$FL.MAX_TOTAL_CLIENTS}'
+              name: 'Количество клиентов превысило пороговое значение > {$FL.MAX_TOTAL_CLIENTS}'
+              priority: INFO
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                The number of clients has exceeded the threshold {$FL.MAX_TOTAL_CLIENTS}
+        - uuid: dd82be40dbea4ca39cf216db051eda7e
+          name: 'Количество потоков'
+          type: DEPENDENT
+          key: flussonic.total_streams
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.total_streams
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 36b51cc4511b4904834e2b013fd67843
+              expression: 'last(/Template App Flussonic v3/flussonic.total_streams)>{$FL.LIMIT_STREAMS}'
+              name: 'Количество потоков превышает значение макроса {$FL.LIMIT_STREAMS}'
+              priority: WARNING
+              description: |
+                The number of streams exceeds the macro value.
+                The macro value must be > {$FL.LIMIT_STREAMS}
+              tags:
+                - tag: Value
+                  value: '{ITEM.VALUE}'
+        - uuid: 85a7847ac8d8411fb86ea95d3900a233
+          name: 'Время работы'
+          type: DEPENDENT
+          key: flussonic.uptime
+          units: uptime
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.uptime
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 7cfca7b4a1cf4f15b78793596a58b6b4
+              expression: 'last(/Template App Flussonic v3/flussonic.uptime)<10m'
+              name: 'Служба Flussonic перезапущена (Время работы меньше 10 минут)'
+              priority: WARNING
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                Uptime is less than 10 minutes
+        - uuid: ddee8d32a54741828cdb63bddcff150f
+          name: Версия
+          type: DEPENDENT
+          key: flussonic.version
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.server_version
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          master_item:
+            key: json.config
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 36fb9a4143a44e88a75cbd6170d08761
+              expression: '(last(/Template App Flussonic v3/flussonic.version,#1)<>last(/Template App Flussonic v3/flussonic.version,#2))=1 and length(last(/Template App Flussonic v3/flussonic.version))>0'
+              recovery_mode: NONE
+              name: 'Изменилась версия Flussonic'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                - tag: Value
+                  value: '{ITEM.VALUE}'
+        - uuid: 92406aa452cc4d418978171e2092d11d
+          name: Config
+          type: HTTP_AGENT
+          key: json.config
+          history: '0'
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$FL.USER}'
+          password: '{$FL.PASS}'
+          description: 'Get /flussonic/api/v3/config'
+          timeout: '60'
+          url: 'http://{HOST.IP}:{$FL.PORT}/flussonic/api/v3/config'
+          follow_redirects: 'NO'
+          headers:
+            - name: 'Content-Type:'
+              value: 'application/json; charset=utf-8'
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: 53cc7ae452bc4e35a0d62b11986856d8
+          name: 'Ошибки количество'
+          type: ZABBIX_ACTIVE
+          key: 'log.count[/var/log/flussonic/flussonic.log,"failed"]'
+          value_type: LOG
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: e69c724f518142bcb7a526ee8943e346
+              expression: 'last(/Template App Flussonic v3/log.count[/var/log/flussonic/flussonic.log,"failed"])>={$FL.MAX_LOG_ERROR}'
+              name: 'Проверьте лог на ошибки'
+              priority: DISASTER
+              tags:
+                - tag: Value
+                  value: '{ITEM.VALUE}'
+        - uuid: 431d6e4f82894c70b7056a783adcfac9
+          name: Ошибки
+          type: ZABBIX_ACTIVE
+          key: 'log[/var/log/flussonic/flussonic.log,"failed"]'
+          value_type: LOG
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+        - uuid: eeac496e4d044028b20b6b6ed4311edf
+          name: 'Количество процессов Flussonic'
+          key: 'proc.num[streamer]'
+          trends: '0'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          tags:
+            - tag: Application
+              value: 'Flussonic Информация'
+          triggers:
+            - uuid: 04ab7a1bd67345c2b234a5872a8415a1
+              expression: 'last(/Template App Flussonic v3/proc.num[streamer])=0'
+              name: 'Служба Flussonic не запущена'
+              priority: DISASTER
+      discovery_rules:
+        - uuid: 9d32f5bb3adc472088fd182b61a5215b
+          name: 'Flussonic stream discovery'
+          type: HTTP_AGENT
+          key: stream.discovery
+          delay: 30m
+          authtype: BASIC
+          username: '{$FL.USER}'
+          password: '{$FL.PASS}'
+          lifetime: 1d
+          item_prototypes:
+            - uuid: bb57b261065b48fea6ed0696bb80e701
+              name: 'Поток "{#STREAM_TITLE}" Статус'
+              type: DEPENDENT
+              key: 'stream[{#STREAM_NAME},alive]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.streams[0].stats.alive'
+                - type: BOOL_TO_DECIMAL
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 30m
+              master_item:
+                key: 'stream[{#STREAM_NAME}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic потоки - Статус'
+            - uuid: 99687a5656ff43ecb67cb01753aa6af4
+              name: 'Поток "{#STREAM_TITLE}" Входящий битрейт'
+              type: DEPENDENT
+              key: 'stream[{#STREAM_NAME},inputs_bandwidth]'
+              value_type: FLOAT
+              units: kbps
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.streams[0].stats.inputs_bandwidth'
+                - type: CHANGE_PER_SECOND
+              master_item:
+                key: 'stream[{#STREAM_NAME}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic потоки - Количество клиентов'
+            - uuid: 81f63473a0d24d9fa056fdde98dca2bc
+              name: 'Поток "{#STREAM_TITLE}" Ошибки в потоке'
+              type: DEPENDENT
+              key: 'stream[{#STREAM_NAME},input_error_rate]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.streams[0].stats.input_error_rate'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'stream[{#STREAM_NAME}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic потоки - Ошибки'
+              trigger_prototypes:
+                - uuid: b8ac8688abd041f0b1db55cbff7fc2d0
+                  expression: 'last(/Template App Flussonic v3/stream[{#STREAM_NAME},input_error_rate])>{$FL.MAX_INPUT_ERROR}'
+                  name: 'Поток "{#STREAM_TITLE}" содержит ошибки'
+                  priority: INFO
+                  tags:
+                    - tag: 'Value:'
+                      value: '{ITEM.VALUE}'
+            - uuid: e44a51bf500f4fadbd526bbb39397cd7
+              name: 'Поток "{#STREAM_TITLE}" Количество клиентов'
+              type: DEPENDENT
+              key: 'stream[{#STREAM_NAME},online_clients]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.streams[0].stats.online_clients'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 30m
+              master_item:
+                key: 'stream[{#STREAM_NAME}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic потоки - Количество клиентов'
+            - uuid: aeee15c81d8e4c2f817041bfd8f9d787
+              name: 'Поток "{#STREAM_TITLE}" статус'
+              type: DEPENDENT
+              key: 'stream[{#STREAM_NAME},status]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.streams[0].stats.status'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 30m
+              master_item:
+                key: 'stream[{#STREAM_NAME}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic потоки - Статус'
+            - uuid: 579bf43570e247ffb446cb0e326087ba
+              name: 'Поток "{#STREAM_TITLE}" Текущий URL потока'
+              type: DEPENDENT
+              key: 'stream[{#STREAM_NAME},url]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.streams[0].inputs.stats.url'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 30m
+              master_item:
+                key: 'stream[{#STREAM_NAME}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonuc потоки - Url текущего потока'
+            - uuid: 30fec94b1ade4dd284f583e889294231
+              name: 'Поток "{#STREAM_TITLE}" JSON'
+              type: HTTP_AGENT
+              key: 'stream[{#STREAM_NAME}]'
+              delay: 10s
+              history: '0'
+              value_type: TEXT
+              authtype: BASIC
+              username: '{$FL.USER}'
+              password: '{$FL.PASS}'
+              timeout: '60'
+              url: 'http://{HOST.IP}:{$FL.PORT}/flussonic/api/v3/streams?name={#STREAM_NAME}'
+              headers:
+                - name: 'Content-Type:'
+                  value: 'application/json; charset=utf-8'
+              tags:
+                - tag: Application
+                  value: 'Flussonic JSON DATA'
+          trigger_prototypes:
+            - uuid: cd18371182ae487bb7dda267a8f965de
+              expression: 'avg(/Template App Flussonic v3/stream[{#STREAM_NAME},alive],#2)=0 and last(/Template App Flussonic v3/stream[{#STREAM_NAME},status])= "error"'
+              name: 'Поток "{#STREAM_TITLE}" не работает'
+              priority: INFO
+              manual_close: 'YES'
+            - uuid: 4e6b955c1547492e8baace02aa9bcc12
+              expression: '(last(/Template App Flussonic v3/stream[{#STREAM_NAME},url],#1)<>last(/Template App Flussonic v3/stream[{#STREAM_NAME},url],#2))=1 and last(/Template App Flussonic v3/stream[{#STREAM_NAME},status])=1'
+              name: 'Поток "{#STREAM_TITLE}" сменился источник потока'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                - tag: 'Value:'
+                  value: '{ITEM.VALUE}'
+          timeout: '60'
+          url: 'http://{HOST.IP}:{$FL.PORT}/flussonic/api/v3/streams?select=name,title&limit={$FL.LIMIT_STREAMS}'
+          follow_redirects: 'NO'
+          headers:
+            - name: 'Content-Type:'
+              value: 'application/json; charset=utf-8'
+          lld_macro_paths:
+            - lld_macro: '{#STREAM_NAME}'
+              path: $.name
+            - lld_macro: '{#STREAM_TITLE}'
+              path: $.title
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value.replace(''streams'', ''data'');'
+        - uuid: abab03bd7cba40a2a426b0f42f162316
+          name: 'Flussonic transcoder devices discovery'
+          type: HTTP_AGENT
+          key: tdevices.discovery
+          authtype: BASIC
+          username: '{$FL.USER}'
+          password: '{$FL.PASS}'
+          filter:
+            conditions:
+              - macro: '{#TYPE}'
+                value: ^cpu$
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          item_prototypes:
+            - uuid: 682089a23e3d49feb1085608ffbc5644
+              name: 'Устройство {#ID}: {#NAME} - Объем памяти свободно'
+              type: DEPENDENT
+              key: 'tdevice[{#ID},{#TYPE},memFree]'
+              units: b
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.memFree
+              master_item:
+                key: 'tdevice[{#ID},{#TYPE}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic устройства транскодинга'
+            - uuid: 57ae91ee141f4918870312ff42e473f5
+              name: 'Устройство {#ID}: {#NAME} - Объем памяти всего'
+              type: DEPENDENT
+              key: 'tdevice[{#ID},{#TYPE},memTotal]'
+              units: b
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.memTotal
+              master_item:
+                key: 'tdevice[{#ID},{#TYPE}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic устройства транскодинга'
+            - uuid: c6b67b1adaa1497895ea390a24df103e
+              name: 'Устройство {#ID}: {#NAME} - Объем памяти использовано'
+              type: DEPENDENT
+              key: 'tdevice[{#ID},{#TYPE},memUsed]'
+              units: b
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.memUsed
+              master_item:
+                key: 'tdevice[{#ID},{#TYPE}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic устройства транскодинга'
+            - uuid: 942d415766954cacbddcec5d6db0ed45
+              name: 'Устройство {#ID}: {#NAME} - Температура'
+              type: DEPENDENT
+              key: 'tdevice[{#ID},{#TYPE},temp]'
+              value_type: FLOAT
+              units: C
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.gpu_temp
+              master_item:
+                key: 'tdevice[{#ID},{#TYPE}]'
+              tags:
+                - tag: Application
+                  value: 'Flussonic устройства транскодинга'
+            - uuid: 364a3418a0a244baa9d400446ce58c04
+              name: 'Устройство транскодинга "{#ID}" {#NAME} JSON'
+              type: HTTP_AGENT
+              key: 'tdevice[{#ID},{#TYPE}]'
+              delay: 30s
+              history: '0'
+              value_type: TEXT
+              authtype: BASIC
+              username: '{$FL.USER}'
+              password: '{$FL.PASS}'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.transcoder_devices[?(@.id=={#ID}&&@.type=="{#TYPE}")]'
+                - type: JSONPATH
+                  parameters:
+                    - '$[0]'
+              timeout: '60'
+              url: 'http://{HOST.IP}:{$FL.PORT}/flussonic/api/server'
+              headers:
+                - name: 'Content-Type:'
+                  value: 'application/json; charset=utf-8'
+              tags:
+                - tag: Application
+                  value: 'Flussonic устройства транскодинга'
+          timeout: '60'
+          url: 'http://{HOST.IP}:{$FL.PORT}/flussonic/api/v3/config'
+          follow_redirects: 'NO'
+          headers:
+            - name: 'Content-Type:'
+              value: 'application/json; charset=utf-8'
+          lld_macro_paths:
+            - lld_macro: '{#ID}'
+              path: $.id
+            - lld_macro: '{#MEM_FREE}'
+              path: $.memFree
+            - lld_macro: '{#MEM_TOTAL}'
+              path: $.memTotal
+            - lld_macro: '{#MEM_USED}'
+              path: $.memUsed
+            - lld_macro: '{#NAME}'
+              path: $.name
+            - lld_macro: '{#TEMP}'
+              path: $.gpu_temp
+            - lld_macro: '{#TYPE}'
+              path: $.type
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stats.transcoder_devices
+            - type: JAVASCRIPT
+              parameters:
+                - 'return "{\"data\":" + value + "}";'
+      macros:
+        - macro: '{$FL.LIMIT_STREAMS}'
+          value: '1000'
+        - macro: '{$FL.MAX_INPUT_ERROR}'
+          value: '2'
+        - macro: '{$FL.MAX_LOG_ERROR}'
+          value: '1'
+        - macro: '{$FL.MAX_TOTAL_CLIENTS}'
+          value: '10000'
+        - macro: '{$FL.PASS}'
+          value: admin
+        - macro: '{$FL.PORT}'
+          value: '80'
+        - macro: '{$FL.PROC}'
+          value: streamer
+        - macro: '{$FL.USER}'
+          value: admin
