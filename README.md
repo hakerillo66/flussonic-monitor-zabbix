@@ -25,3 +25,8 @@
 Поток "{#STREAM_TITLE}" сменился источник потока	
 
 Поток "{#STREAM_TITLE}" содержит ошибки		
+
+
+
+Author: Eynikov S.V. E-mail: semeneynikov@gmail.com'
+Слегка перепилено мной
